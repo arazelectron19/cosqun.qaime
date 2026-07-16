@@ -1,0 +1,561 @@
+/* ==========================================================================
+   1. ƏSAS TÜND ARAYÜZ STİLLƏRİ
+   ========================================================================= */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+body {
+    background-color: #0b132b;
+    color: #f1f5f9;
+    padding: 15px; 
+    font-size: 18px; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   BLOKU ENİNƏ 600PX SAXLAYIB DAHA DA YAXINLAŞDIRAN KONTEYNER (ZOOM)
+   ========================================================================= */
+.app-container {
+    max-width: 600px !important; /* En sabit 600px qalır */
+    width: 100% !important;
+    margin: 0 auto !important;
+    
+    /* YAXINLAŞDIRMA DƏRƏCƏSİ 1.5-DƏN 1.75-Ə QALXDIRILDI (175% Böyütmə) */
+    zoom: 1.75 !important; 
+    -moz-transform: scale(1.75); /* Firefox üçün */
+    -moz-transform-origin: top center;
+}
+
+/* Giriş və İdarəetmə Paneli */
+.control-panel {
+    background: #1c2541;
+    padding: 16px 20px; 
+    border-radius: 8px;
+    margin-bottom: 10px; 
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #3a506b;
+}
+
+.control-panel input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #3a506b;
+    border-radius: 6px;
+    font-size: 16px; 
+    background-color: #0b132b;
+    color: #ffffff;
+    outline: none;
+    font-weight: 600;
+    height: 44px; 
+}
+
+/* Düymələr */
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 15px; 
+    transition: background 0.2s;
+    height: 44px;
+}
+
+.btn-blue { 
+    background-color: #0b132b;
+    border: 1px solid #5bc0be;
+    color: #5bc0be;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-blue:hover {
+    background-color: #5bc0be;
+    color: #0b132b;
+    border-color: #5bc0be;
+}
+
+.btnNewInvoice, #btn-new-invoice {
+    background-color: #0b132b;
+    border: 1px solid #10b981;
+    color: #10b981;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    -webkit-tap-highlight-color: transparent; /* Mobil toxunuş kölgəsini silir */
+}
+
+/* Hover effekti YALNIZ siçan (PC) istifadə edənlər üçün işləsin */
+@media (hover: hover) {
+    .btnNewInvoice:hover, #btn-new-invoice:hover {
+        background-color: #10b981;
+        color: #ffffff !important;
+        border-color: #10b981;
+    }
+}
+
+/* JavaScript ilə 500ms aktiv edəcəyimiz sinif */
+.btnNewInvoice.clicked {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #10b981 !important;
+}
+
+.btn-yellow {
+    background-color: #1c1510;
+    border: 1px solid #b45309;
+    color: #d97706;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Keçidi bir az sürətləndirdik */
+    -webkit-tap-highlight-color: transparent; /* Mobil toxunuş kölgəsini ləğv edir */
+}
+
+/* Hover effekti YALNIZ siçan (PC) istifadə edənlər üçün işləsin */
+@media (hover: hover) {
+    .btn-yellow:hover {
+        background-color: #d97706;
+        color: #1c1510;
+        border-color: #d97706;
+    }
+}
+
+/* JavaScript ilə telefonda 1 saniyəlik yandırıb söndürəcəyimiz class */
+.btn-yellow.clicked {
+    background-color: #d97706 !important;
+    color: #1c1510 !important;
+    border-color: #d97706 !important;
+}
+
+/* ==========================================================================
+   İRİ CƏDVƏL STRUKTURU
+   ========================================================================= */
+.main-content { 
+    display: flex; 
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .control-panel { 
+        flex-direction: row; 
+        align-items: center; 
+    }
+}
+
+.invoice-box { 
+    background: #1c2541; 
+    padding: 12px; 
+    border-radius: 8px; 
+    border: 1px solid #3a506b; 
+}
+
+.invoice-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 10px;
+    border: 1px solid #3a506b;
+    border-radius: 6px;
+    background: #0b132b;
+}
+
+.invoice-table { width: 100%; border-collapse: collapse; }
+.invoice-table th { background-color: #0b132b; color: #5bc0be; padding: 10px 12px; text-transform: uppercase; font-size: 12px; border-bottom: 2px solid #3a506b; text-align: left; }
+.invoice-table td { padding: 8px; border-bottom: 1px solid #1c2441; vertical-align: middle; } 
+
+/* SÜTUN ÖLÇÜLƏRİ - AZN SİLİNDİYİ ÜÇÜN YENİDƏN BALANSLANDIRILDI */
+/* SÜTUN ÖLÇÜLƏRİ - AZN SİLİNDİYİ ÜÇÜN YENİDƏN BALANSLANDIRILDI */
+.invoice-table th:nth-child(1), .invoice-table td:nth-child(1) { width: 5%; text-align: center; }
+.invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { width: 45%; } /* Məhsul adı üçün geniş yer */
+.invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { width: 15%; } /* Miqdar */
+.invoice-table th:nth-child(4), .invoice-table td:nth-child(4) { width: 15%; } /* Qiymət */
+.invoice-table th:nth-child(5), .invoice-table td:nth-child(5) { width: 15%; } /* Cəmi (Sadəcə rəqəm) */
+.invoice-table th:nth-child(6), .invoice-table td:nth-child(6) { width: 5%; text-align: center; }
+
+.invoice-table input {
+    width: 100%;
+    border: 1px solid #3a506b;
+    padding: 6px 10px;
+    border-radius: 5px;
+    background-color: #1c2541;
+    color: #ffffff;
+    outline: none;
+    font-size: 15px; 
+    height: 38px; 
+}
+
+.invoice-table input.item-qty, 
+.invoice-table input.item-price {
+    text-align: center;
+    max-width: 80px;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Sətir sil */
+.btn-delete-row {
+    background-color: #0b132b;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-row:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+/* Sətir əlavə et */
+
+/* Yekun məbləğ sahəsi */
+.invoice-footer { display: flex; justify-content: flex-end; background: #0b132b; padding: 10px; border-radius: 6px; border: 1px solid #3a506b; }
+.total-amount { font-size: 14px; color: #5bc0be; }
+.total-amount span { font-size: 18px; color: #ffffff; font-weight: 800; margin-left: 6px; }
+
+/* Gözləyən Qaimələr Paneli */
+.waiting-panel { background: #1c2541; padding: 12px; border-radius: 8px; border: 1px solid #3a506b; height: fit-content; }
+.panel-header { display: flex; justify-content: space-between; border-bottom: 1px solid #3a506b; padding-bottom: 8px; margin-bottom: 8px; align-items: center; }
+.panel-header h3 { font-size: 14px; color: #5bc0be; font-weight: 700; }
+
+.btn-refresh, .btn-archive-nav {
+    background-color: #0b132b !important;
+    border: 1px solid #3a506b !important;
+    color: #5bc0be !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease, color 0.2s ease !important;
+    -webkit-tap-highlight-color: transparent; /* Mobil klik kölgəsini silir */
+}
+
+/* YALNIZ siçan (mouse) istifadə edən cihazlarda (PC) hover işləsin */
+@media (hover: hover) {
+    .btn-refresh:hover, .btn-archive-nav:hover {
+        background-color: #5bc0be !important;
+        color: #0b132b !important;
+        border-color: #5bc0be !important;
+    }
+}
+
+/* JavaScript ilə 1 saniyəlik yandırıb söndürəcəyimiz class */
+.btn-refresh.clicked {
+    background-color: #5bc0be !important;
+    color: #0b132b !important;
+    border-color: #5bc0be !important;
+}
+
+.waiting-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+.waiting-item { display: flex; justify-content: space-between; align-items: center; background: #0b132b; border: 1px solid #3a506b; padding: 8px 10px; border-radius: 5px; cursor: pointer; }
+
+.btn-delete-waiting {
+    background-color: #0b132b;
+    border: 1px solid #ef4444;
+    color: #ef4444 !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* ==========================================================================
+   YÜKLƏNMƏ SPİNNERİ
+   ========================================================================= */
+.loading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.sharp-ring-loader {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(91, 192, 190, 0.15);
+    border-top: 2px solid #5bc0be;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   MOBİL CİHAZLARDA ZOOM DETALLARINI SIFIRLAYIRIQ (Mobil ekrana tam otursun)
+   ========================================================================== */
+@media (max-width: 768px) {
+    body {
+        padding: 4px !important;
+    }
+
+    .app-container {
+        zoom: 1 !important;
+        -moz-transform: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .control-panel {
+        padding: 8px !important;
+        gap: 6px !important;
+    }
+
+    .control-panel input {
+        height: 38px !important;
+        font-size: 14px !important;
+    }
+
+    .actions {
+        gap: 6px !important;
+    }
+
+    .btn, .btn-blue, .btnNewInvoice, #btn-new-invoice, .btn-yellow, .btn-green {
+        height: 38px !important;
+        font-size: 12px !important;
+    }
+
+    .invoice-box {
+        padding: 8px !important;
+    }
+
+    .invoice-table-wrapper {
+        margin-bottom: 8px !important;
+    }
+
+    .invoice-table {
+        min-width: 450px !important;
+    }
+
+    .invoice-table th {
+        padding: 6px 4px !important;
+        font-size: 11px !important;
+    }
+
+    .invoice-table td {
+        padding: 4px !important;
+    }
+
+    .invoice-table input {
+        height: 32px !important;
+        font-size: 13px !important;
+    }
+
+    /* Sətir əlavə et */
+    .btn-delete-row {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    .invoice-footer {
+        padding: 8px !important;
+    }
+
+    .total-amount span {
+        font-size: 15px !important;
+    }
+}
+
+/* Cədvəlin "Cəmi" sütununda yalnız rəqəmləri saxlayır, AZN mətnini gizlədir */
+.invoice-table td:nth-child(5) {
+    font-size: 0px !important; /* Bütün daxili mətni (AZN daxil) sıfırlayır */
+}
+
+/* Yalnız rəqəm hissəsinin görünməsi üçün daxildəki rəqəmə yenidən şrift ölçüsü veririk */
+.invoice-table td:nth-child(5)::first-line {
+    font-size: 15px !important; /* Rəqəmi yenidən iri və görünən edir */
+}
+
+.btn-new-row-style {
+    display: block !important;
+    width: 100% !important;
+    background-color: #0b132b !important;
+    border: 1px solid #3a506b !important;
+    color: #5bc0be !important;
+    padding: 12px 20px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    margin-bottom: 15px !important;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent; /* Mobil toxunuş kölgəsini silir */
+}
+
+/* Hover effekti YALNIZ siçan (PC) istifadə edənlər üçün */
+@media (hover: hover) {
+    .btn-new-row-style:hover {
+        background-color: #5bc0be !important;
+        color: #ffffff !important;
+        border-color: #5bc0be !important;
+    }
+}
+
+/* JavaScript ilə 500ms aktiv saxlayacağımız sinif */
+.btn-new-row-style.clicked {
+    background-color: #5bc0be !important;
+    color: #ffffff !important;
+    border-color: #5bc0be !important;
+}
+
+/* Sürətli Seçim Dropdown Paneli - Lap Böyük */
+.custom-dropdown {
+    position: absolute;
+    background-color: #0b132b;
+    border: 3px solid #5bc0be; /* Sərhədi daha da qalınlaşdırdıq */
+    border-radius: 12px; 
+    max-height: 320px; /* Siyahı hündürlüyünü bir az da artırdıq */
+    overflow-y: auto;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    box-sizing: border-box;
+}
+
+/* Siyahıdakı hər bir sətir - Maksimum Ölçü */
+.dropdown-item {
+    padding: 20px 24px; /* Klikləmə sahəsini (hündürlüyünü) xeyli artırdıq */
+    color: #ffffff; 
+    font-size: 22px; /* Yazının ölçüsünü 18px-dən 22px-ə qaldırdıq */
+    font-weight: 800; /* Yazını tam şrift qalınlığına gətirdik */
+    cursor: pointer;
+    border-bottom: 2px solid rgba(58, 80, 107, 0.6); /* Bölgü xəttini daha qalın etdik */
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Sonuncu sətirdə alt xətt olmasın */
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background-color: #5bc0be;
+    color: #0b132b;
+}
+
+/* Düymələrin yan-yana aralı durması üçün */
+.panel-header-buttons {
+    display: flex !important;
+    gap: 8px !important; /* Aralarında 8px boşluq qoyur */
+    align-items: center !important;
+}
+
+/* Parametr düyməsinin dizaynı */
+.btn-settings {
+    background-color: #0b132b !important;
+    border: 1px solid #3a506b !important;
+    color: #a5b4fc !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important; /* Link xəttini silir */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* PC üçün Hover effekti */
+@media (hover: hover) {
+    .btn-settings:hover {
+        background-color: #3a506b !important;
+        color: #ffffff !important;
+        border-color: #5bc0be !important;
+    }
+}
+
+/* Klik anında 500ms-lik rəng dəyişməsi class-ı */
+.btn-settings.clicked {
+    background-color: #3a506b !important;
+    color: #ffffff !important;
+    border-color: #5bc0be !important;
+}
+
+.template-selector-container {
+    background-color: #1c2541;
+    border: 1px solid #3a506b;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px; /* Üst və alt bloklardan səliqəli məsafə */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.template-label {
+    color: #5bc0be;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.template-selector-container {
+    background-color: #1c2541;
+    border: 1px solid #3a506b;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.template-label {
+    color: #5bc0be;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* Tamamilə digər inputlar kimi standart dropdown dizaynı */
+.template-select-dropdown {
+    background-color: #0b132b;
+    color: #ffffff;
+    border: 1px solid #3a506b;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 15px;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.template-select-dropdown:focus {
+    border-color: #5bc0be;
+}

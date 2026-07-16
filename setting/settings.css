@@ -1,0 +1,519 @@
+/* Səhifənin Ümumi Fonu və Sıfırlama */
+body {
+    background-color: #0b0b16 !important; 
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #ffffff;
+}
+
+.btn-back {
+    color: #0b0b16 !important;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #a5b4fc !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-top: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-back:hover {
+    background-color: #818cf8 !important;
+    text-decoration: none;
+}
+
+.btn-back:active {
+    transform: scale(0.97);
+}
+
+/* Yenilənmiş Ana Konteyner */
+.main-settings-wrapper {
+    width: 100% !important;
+    max-width: 440px !important; 
+    margin: 20px auto !important;
+    padding: 0 10px !important;
+    box-sizing: border-box;
+}
+
+/* Başlıq Hissəsi */
+.settings-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.settings-header h2 {
+    color: #5bc0be;
+    font-size: 22px;
+    margin: 0 0 5px 0;
+}
+
+/* Tam Ayrılmış və Dar Stack Yapısı */
+.compact-settings-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Əsas qutular */
+.compact-box {
+    background-color: #1a1a2e !important;
+    border: 1px solid #2e2e4f !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    width: 100% !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+}
+
+.compact-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.compact-box input[type="text"],
+.compact-box input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    background-color: #0f0f1b;
+    border: 1px solid #3d3d6b;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.btn-save {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #5bc0be;
+    color: #0b0b16;
+}
+
+/* Checkbox qutusu tənzimləmələri */
+.checkbox-group {
+    background-color: #0f0f1b;
+    border: 1px solid #3d3d6b;
+    border-radius: 8px;
+    padding: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Hər bir məhsul kartı */
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background-color: #16162a;
+    border: 1px solid #2e2e4f;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #e2e8f0;
+    transition: all 0.2s ease-in-out;
+    user-select: none;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.checkbox-item:hover {
+    background-color: #1f1f3a;
+    border-color: #4f4f7f;
+}
+
+/* Checkbox seçiləndə kartın stili */
+.checkbox-item.checked-active {
+    background-color: rgba(91, 192, 190, 0.1) !important;
+    border-color: #5bc0be !important;
+    box-shadow: 0 0 8px rgba(91, 192, 190, 0.15);
+}
+
+.checkbox-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Modern Checkbox */
+.checkbox-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #5bc0be;
+    border-radius: 4px;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+    margin: 0;
+}
+
+.checkbox-item input[type="checkbox"]:checked {
+    background-color: #5bc0be;
+}
+
+.checkbox-item input[type="checkbox"]:checked::after {
+    content: "✓";
+    font-size: 11px;
+    color: #0b0b16;
+    font-weight: 900;
+    position: absolute;
+}
+
+.checkbox-price-tag {
+    background-color: #1e1e38;
+    color: #5bc0be;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    border: 1px solid rgba(91, 192, 190, 0.2);
+}
+
+.checkbox-item.checked-active .checkbox-price-tag {
+    background-color: #5bc0be;
+    color: #0b0b16;
+}
+
+.list-wrapper {
+    margin-top: 10px;
+    background-color: #0f0f1b;
+    border: 1px solid #2e2e4f;
+    border-radius: 6px;
+    padding: 4px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.setting-row-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 6px;
+    border-bottom: 1px solid #1e1e38;
+    font-size: 15px;
+}
+
+.setting-row-item:last-child {
+    border-bottom: none;
+}
+
+.btn-delete-setting {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-edit-setting {
+    background-color: #f59e0b;
+    color: #0b0b16;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: background 0.2s;
+}
+
+.btn-edit-setting:hover {
+    background-color: #d97706;
+}
+
+/* Redaktə formundakı daxili sətir xanaları (Məhsul bazası redaktəsi üçün qorunub saxlanıldı) */
+.edit-input-group {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+.edit-input-group input {
+    background-color: #0f0f1b !important;
+    border: 1px solid #3d3d6b !important;
+    color: #ffffff !important;
+    padding: 6px 8px !important;
+    font-size: 14px !important;
+    border-radius: 4px !important;
+    margin: 0 !important;
+}
+
+.edit-input-name {
+    flex: 2;
+}
+
+.edit-input-price {
+    flex: 1;
+}
+
+.btn-save-edit {
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-cancel-edit {
+    background-color: #6b7280;
+    color: #ffffff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#base-products-list {
+    display: none;
+    transition: all 0.3s ease-in-out;
+}
+
+#base-products-list.active {
+    display: block !important;
+}
+
+.rotate-arrow {
+    transform: rotate(90deg);
+}
+
+#template-products-selector {
+    display: none;
+    transition: all 0.3s ease-in-out;
+}
+
+#template-products-selector.active {
+    display: flex !important;
+}
+
+/* ==========================================================================
+   YENİ: PROFESSIONAL MODAL (POPUP) SİSTEMİNİN STİLLƏRİ (Mükəmməl mobil uyğunluq)
+   ========================================================================== */
+
+/* Modal Arxa Fonu */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 10, 20, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* Modal Pəncərəsi */
+.modal-content {
+    background-color: #111125;
+    border: 1px solid #3d3d6b;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    animation: modalSlideUp 0.25s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Modal Başlığı */
+.modal-header {
+    padding: 16px;
+    border-bottom: 1px solid #252545;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #5bc0be;
+    font-size: 18px;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 26px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+/* Modal Daxili */
+.modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-field-group {
+    margin-bottom: 16px;
+}
+
+.modal-field-group label {
+    display: block;
+    color: #9ca3af;
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.modal-field-group input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    background: #090915;
+    border: 1px solid #3d3d6b;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.modal-field-group input[type="text"]:focus {
+    border-color: #5bc0be;
+    outline: none;
+}
+
+/* Modal daxilindəki məhsul siyahısı */
+.modal-checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Mobil tipli zərif sürüşdürmə çubuğu (scrollbar) */
+.modal-checkbox-list::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-checkbox-list::-webkit-scrollbar-track {
+    background: #0a0a15;
+}
+.modal-checkbox-list::-webkit-scrollbar-thumb {
+    background: #3d3d6b;
+    border-radius: 3px;
+}
+
+/* Modal Düymələri */
+.modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #252545;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-modal-cancel {
+    background: #374151;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-modal-save {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Loading Spinner & Container */
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Ortalanması üçün */
+    gap: 10px;
+    color: #9ca3af;
+    font-size: 14px;
+    padding: 15px 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #5bc0be; /* Şablonun ümumi firuzəyi rənginə uyğunlaşdırıldı */
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

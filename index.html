@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024, initial-scale=0.4, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <title>Qaime</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="shortcut icon" type="image/png" href="./favicon.png">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Üst İdarəetmə Paneli -->
+        <div class="control-panel">
+            <input type="text" id="customer-input" placeholder="Müştəri adı..." autocomplete="off">
+            <div class="actions">
+                <button class="btnNewInvoice" id="btn-new-invoice">Yeni+</button>
+                <button class="btn btn-yellow" id="btn-waiting">Gözləməyə Al</button>
+            </div>
+        </div>
+
+        <div class="template-selector-container">
+            <label for="select-template" class="template-label">📋 Sürətli Şablon Seçin:</label>
+            <select id="select-template" class="template-select-dropdown">
+                <option value="">-- Şablon seçilməyib --</option>
+            </select>
+        </div>
+
+        <div class="main-content">
+            <!-- Sol tərəf: Daxiletmə və Cədvəl -->
+            <div class="invoice-box">
+                <div class="invoice-table-wrapper" style="position: relative;">
+                    <table class="invoice-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 50%;">Məhsulun Adı</th>
+                                <th style="width: 15%;">Miqdar</th>
+                                <th style="width: 15%;">Qiymət</th>
+                                <th style="width: 10%;">Cəmi</th>
+                                <th style="width: 5%;">Sil</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoice-items-body">
+                            <!-- Dinamik sətirlər -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Sürətli məhsul seçimi dropdown paneli -->
+                    <div id="custom-dropdown" class="custom-dropdown" style="display: none;"></div>
+                </div>
+
+                <button class="btn-new-row-style" id="btn-add-item">+ Yeni Mal Əlavə Et</button>
+
+                <div class="invoice-footer">
+                    <div class="total-amount">Yekun Ödəniş: <span id="total-price-view">0.00</span> AZN</div>
+                </div>
+            </div>
+
+            <!-- Sağ tərəf: Gözləmə Paneli -->
+            <div class="waiting-panel">
+                <div class="panel-header">
+                    <h3>Gözləyən Qaimələr</h3>
+                    <div class="panel-header-buttons">
+                        <button id="btn-refresh" class="btn-refresh">Yenilə</button>
+                        <a href="setting/" id="btn-settings" class="btn-settings">⚙️ Parametr</a>
+                    </div>
+                </div>
+                <div class="waiting-list" id="waiting-list-container">
+                    <!-- Gözləyən siyahı -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
