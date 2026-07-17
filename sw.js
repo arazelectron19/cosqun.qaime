@@ -1,8 +1,12 @@
 const CACHE_NAME = 'qaime-v1';
 const ASSETS = [
-  '/qaime/',
-  '/qaime/index.html',
-  '/qaime/manifest.json'
+  '/cosqun.qaime/',
+  '/cosqun.qaime/index.html',
+  '/cosqun.qaime/style.css',
+  '/cosqun.qaime/app.js',
+  '/cosqun.qaime/firebase.js',
+  '/cosqun.qaime/manifest.json',
+  '/cosqun.qaime/favicon_5.png' // <--- Səhv fayl adı düzəldildi
 ];
 
 // Quraşdırılma zamanı əsas faylları keşə yığır
@@ -31,13 +35,13 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Sorğuları idarə edir (404 xətasının qarşısını alan əsas hissə)
+// Sorğuları idarə edir
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       return cachedResponse || fetch(event.request).catch(() => {
         if (event.request.mode === 'navigate') {
-          return caches.match('/qaime/index.html');
+          return caches.match('/cosqun.qaime/index.html');
         }
       });
     })

@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="az">
 <head>
@@ -5,9 +6,12 @@
     <meta name="viewport" content="width=1024, initial-scale=0.4, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <title>Qaime</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css?v=3">
     <link rel="icon" type="image/png" href="./favicon.png">
     <link rel="shortcut icon" type="image/png" href="./favicon.png">
+
+    <!-- html2pdf kitabxanasını bura əlavə edirik -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -18,8 +22,27 @@
             <div class="actions">
                 <button class="btnNewInvoice" id="btn-new-invoice">Yeni+</button>
                 <button class="btn btn-yellow" id="btn-waiting">Gözləməyə Al</button>
+                
+                <!-- PDF yaradıb paylaşacaq düymə -->
+                <button class="btn-share-style" id="btn-share-pdf">📤 Paylaş</button>
             </div>
         </div>
+
+<!-- Dəyişdirilmiş yeni kod bloqu -->
+<div style="margin-top: 12px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;">
+    <label for="invoice-date-input" style="font-size: 12px; color: #a5b4fc; font-weight: 600;">Qaimə Tarixi:</label>
+    <input type="date" id="invoice-date-input" style="
+        width: 100%;
+        padding: 10px;
+        background-color: #1e1b4b;
+        border: 1px solid #312e81;
+        border-radius: 6px;
+        color: #ffffff;
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+    ">
+</div>
 
         <div class="template-selector-container">
             <label for="select-template" class="template-label">📋 Sürətli Şablon Seçin:</label>

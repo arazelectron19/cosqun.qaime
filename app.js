@@ -1,21 +1,24 @@
+// 1. Bütün lazım olan Firestore metodlarını və db-ni təhlükəsiz şəkildə yalnız bir yerdən import edirik
+import { 
+    db, 
+    collection, 
+    getDocs, 
+    addDoc, 
+    query, 
+    orderBy, 
+    serverTimestamp,
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    where 
+} from "./firebase.js";
+
+// 2. Service Worker qeydiyyatı
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js', { scope: '/qaime/' })
+    navigator.serviceWorker.register('./sw.js', { scope: '/cosqun.qaime/' })
         .then(() => console.log("Service Worker aktivləşdirildi."))
         .catch(err => console.error("SW qeydiyyat xətası:", err));
 }
-
-import { db } from "./firebase.js"; 
-import { 
-    collection, 
-    addDoc, 
-    getDocs, 
-    query, 
-    where, 
-    deleteDoc, 
-    doc, 
-    updateDoc, 
-    orderBy 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 function showNotification(message, type = 'success') {
     const oldNotification = document.getElementById('custom-notification');
@@ -69,6 +72,8 @@ const totalPriceView = document.getElementById('total-price-view');
 const waitingListContainer = document.getElementById('waiting-list-container');
 const btnNewInvoice = document.getElementById('btn-new-invoice');
 const selectTemplate = document.getElementById('select-template');
+const dateInput = document.getElementById('invoice-date-input');
+const btnSharePdf = document.getElementById('btn-share-pdf');
 
 let invoiceItems = [{ name: '', qty: 1, price: 0 }];
 let currentActiveDocId = null;
@@ -78,7 +83,41 @@ document.addEventListener('DOMContentLoaded', () => {
     renderItems();
     fetchWaitingList();
     loadGlobalProductsAndTemplates();
+    setTodayDate(); // Səhifə açılanda bu günün tarixini avtomatik yazır
+    
+    // Dropdown-dan seçim klik məntiqi
+    const dropdown = document.getElementById('custom-dropdown');
+    if (dropdown) {
+        dropdown.addEventListener('click', (e) => {
+            const itemEl = e.target.closest('.dropdown-item');
+            if (!itemEl) return;
+
+            const targetIndex = parseInt(dropdown.getAttribute('data-target-index'));
+            if (isNaN(targetIndex)) return;
+
+            invoiceItems[targetIndex].name = itemEl.textContent;
+            invoiceItems[targetIndex].price = parseFloat(itemEl.dataset.price) || 0;
+            
+            renderItems();
+            dropdown.style.display = 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('item-name') && !e.target.closest('#custom-dropdown')) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
 });
+
+function setTodayDate() {
+    if (dateInput) {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        const localISODate = (new Date(now - offset)).toISOString().slice(0, 10);
+        dateInput.value = localISODate;
+    }
+}
 
 // Firebase-dən həm məhsul siyahısını, həm də şablonları çəkirik
 async function loadGlobalProductsAndTemplates() {
@@ -223,32 +262,6 @@ function filterDropdownItems(filterText, dropdown) {
     dropdown.style.display = 'block';
 }
 
-// Dropdown-dan seçim klik məntiqi
-document.addEventListener('DOMContentLoaded', () => {
-    const dropdown = document.getElementById('custom-dropdown');
-    if (!dropdown) return;
-
-    dropdown.addEventListener('click', (e) => {
-        const itemEl = e.target.closest('.dropdown-item');
-        if (!itemEl) return;
-
-        const targetIndex = parseInt(dropdown.getAttribute('data-target-index'));
-        if (isNaN(targetIndex)) return;
-
-        invoiceItems[targetIndex].name = itemEl.textContent;
-        invoiceItems[targetIndex].price = parseFloat(itemEl.dataset.price) || 0;
-        
-        renderItems();
-        dropdown.style.display = 'none';
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('item-name') && !e.target.closest('#custom-dropdown')) {
-            dropdown.style.display = 'none';
-        }
-    });
-});
-
 function fastCalculateTotal() {
     const total = invoiceItems.reduce((sum, item) => sum + (item.qty * item.price), 0);
     if (totalPriceView) totalPriceView.textContent = total.toFixed(2);
@@ -276,11 +289,14 @@ if (btnWaiting) {
             return showNotification("Müştəri adı və məhsul əlavə edin", "error");
         }
 
+        // Tarix seçimini yoxlayıb Date obyektinə çeviririk
+        const selectedDate = dateInput && dateInput.value ? new Date(dateInput.value) : new Date();
+
         const data = {
             customerName: customerName,
             items: invoiceItems,
             status: "waiting",
-            updatedAt: new Date()
+            updatedAt: selectedDate // Seçilmiş tarix Firebase-ə yazılır
         };
 
         try {
@@ -304,7 +320,11 @@ async function fetchWaitingList() {
     if (!waitingListContainer) return;
     waitingListContainer.innerHTML = '<div class="loading-wrapper"><div class="sharp-ring-loader"></div></div>';
     try {
-        const q = query(collection(db, "waiting_invoices"), where("status", "==", "waiting"));
+        // YALNIZ statusa görə süzürük (Bu zaman indeks TƏLƏB OLUNMUR)
+        const q = query(
+            collection(db, "waiting_invoices"), 
+            where("status", "==", "waiting")
+        );
         const snap = await getDocs(q);
         waitingListContainer.innerHTML = '';
 
@@ -313,15 +333,30 @@ async function fetchWaitingList() {
             return;
         }
 
-        snap.forEach((documentSnapshot) => {
-            const data = documentSnapshot.data();
-            const docId = documentSnapshot.id;
+        // Gələn məlumatları JavaScript tərəfində tarixinə görə azalan sıra ilə düzürük (İndekssiz sıralama)
+        const docsArray = [];
+        snap.forEach(docSnap => {
+            docsArray.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        docsArray.sort((a, b) => {
+            const timeA = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : new Date(a.updatedAt).getTime();
+            const timeB = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : new Date(b.updatedAt).getTime();
+            return timeB - timeA; // Yenidən köhnəyə sıralama
+        });
+
+        // Artıq sıralanmış massiv üzərindən render edirik
+        docsArray.forEach((data) => {
+            const docId = data.id;
+            const formattedDate = formatDate(data.updatedAt);
+
             const div = document.createElement('div');
             div.className = 'waiting-item';
             div.innerHTML = `
                 <div style="flex:1;" class="info-area">
                     <strong style="color:#ffffff;">${data.customerName}</strong>
                     <span style="display:block; font-size:11px; color:#a5b4fc; margin-top:2px;">${data.items.length} məhsul</span>
+                    <span style="display:block; font-size:10px; color:#9ca3af; margin-top:4px;">📅 ${formattedDate}</span>
                 </div>
                 <div class="action-area" style="display:flex; align-items:center;">
                     <button class="btn-delete-waiting">Sil</button>
@@ -333,6 +368,15 @@ async function fetchWaitingList() {
                 currentActiveDocId = docId;
                 customerInput.value = data.customerName;
                 invoiceItems = data.items;
+
+                // Bazadan gələn tarixi tarix inputuna düzgün formatda oturdur
+                if (dateInput && data.updatedAt) {
+                    const dateObj = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
+                    const offset = dateObj.getTimezoneOffset() * 60000;
+                    const localISODate = (new Date(dateObj - offset)).toISOString().slice(0, 10);
+                    dateInput.value = localISODate;
+                }
+
                 renderItems();
                 if (btnWaiting) btnWaiting.textContent = 'Yenilə';
             });
@@ -375,7 +419,9 @@ async function fetchWaitingList() {
 
             waitingListContainer.appendChild(div);
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+    }
 }
 
 const btnRefresh = document.getElementById('btn-refresh');
@@ -392,6 +438,7 @@ function resetForm() {
     if (selectTemplate) selectTemplate.selectedIndex = 0; // Yeni qaimə yaradanda şablon seçimi sıfırlansın
     invoiceItems = [{ name: '', qty: 1, price: 0 }];
     currentActiveDocId = null;
+    setTodayDate(); // Yeni qaimə yaradanda tarixi bu günə sıfırlayır
     renderItems();
     if (btnWaiting) btnWaiting.textContent = 'Gözləməyə Al';
 }
@@ -427,6 +474,175 @@ if (selectTemplate) {
         } catch (err) {
             console.error("Şablon tətbiq xətası:", err);
         }
-        // selectTemplate.selectedIndex = 0; // Bu sətir silindi ki, seçilmiş ad qutuda qalsın.
     });
+}
+
+// Tarixi oxunaqlı formata salan funksiya
+function formatDate(firestoreTimestamp) {
+    if (!firestoreTimestamp) return "";
+
+    // Firestore-dan gələn Timestamp obyektini JS Date obyektinə çeviririk
+    const date = firestoreTimestamp.toDate ? firestoreTimestamp.toDate() : new Date(firestoreTimestamp);
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
+}
+
+// PDF generasiya və paylaşma məntiqi
+if (btnSharePdf) {
+    btnSharePdf.addEventListener('click', async () => {
+        btnSharePdf.classList.add('clicked');
+        setTimeout(() => btnSharePdf.classList.remove('clicked'), 500);
+        await generateAndSharePDF();
+    });
+}
+
+async function generateAndSharePDF() {
+    const customerName = customerInput.value.trim() || "Müştəri";
+    const selectedDate = dateInput ? dateInput.value : "";
+    
+    // Tarixi Gün.Ay.İl formatına salırıq
+    let formattedDate = "";
+    if (selectedDate) {
+        const parts = selectedDate.split("-");
+        if (parts.length === 3) {
+            formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+    } else {
+        const now = new Date();
+        formattedDate = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
+    }
+
+    if (invoiceItems.length === 1 && !invoiceItems[0].name.trim()) {
+        return showNotification("Boş qaimə paylaşıla bilməz!", "error");
+    }
+
+    // Mobil cihazın bu funksiyanı dəstəklədiyini ilk öncə yoxlayırıq
+    if (!navigator.canShare) {
+        return showNotification("Cihazınız birbaşa PDF paylaşmağı dəstəkləmir!", "error");
+    }
+
+    const originalBtnText = btnSharePdf.innerHTML;
+    btnSharePdf.disabled = true;
+    btnSharePdf.innerHTML = "⌛ Hazırlanır...";
+
+    // PDF üçün çap şablonunu gizli konteynerdə yaradırıq
+    const printContainer = document.createElement('div');
+    printContainer.className = 'pdf-render-hidden';
+
+    let tableRowsHTML = "";
+    let grandTotal = 0;
+
+    invoiceItems.forEach((item, index) => {
+        const rowTotal = (item.qty || 1) * (item.price || 0);
+        grandTotal += rowTotal;
+        tableRowsHTML += `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${index + 1}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #000000;">${item.name || ''}</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; color: #000000;">${item.qty}</td>
+                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; color: #000000;">${item.price.toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #000000;">${rowTotal.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    printContainer.innerHTML = `
+        <div style="padding: 40px; background-color: #ffffff; font-family: Arial, sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px;">
+                <div>
+                    <h1 style="font-size: 28px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">SATIŞ QAİMƏSİ</h1>
+                    <p style="margin: 15px 0 5px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 0.5px;">KİMƏ (MÜŞTƏRİ):</p>
+                    <div style="font-size: 18px; font-weight: bold; color: #000000; border-bottom: 2px solid #000000; padding-bottom: 4px; display: inline-block; min-width: 220px;">
+                        ${customerName}
+                    </div>
+                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #475569;">📅 <strong>Tarix:</strong> ${formattedDate}</p>
+                </div>
+                <div style="text-align: right; font-family: sans-serif;">
+                    <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: #000000;">ARAZ ELECTRON</h2>
+                    <p style="font-size: 12px; color: #475569; margin: 4px 0 12px 0;">Elektronika və Texniki Dəstək Xidmətləri</p>
+                    <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                        <p style="margin: 2px 0;">📍 Beyləqan r. Magistral yol</p>
+                        <p style="margin: 2px 0;">🌐 arazelectron.com</p>
+                        <p style="margin: 2px 0;">✉️ info@arazelectron.com</p>
+                        <p style="margin: 2px 0;">📞 +994514280906</p>
+                    </div>
+                </div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr style="border-bottom: 3px solid #000000;">
+                        <th style="width: 8%; padding: 12px 6px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">#</th>
+                        <th style="width: 47%; padding: 12px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Məhsulun Adı</th>
+                        <th style="width: 15%; padding: 12px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Miqdar</th>
+                        <th style="width: 15%; padding: 12px; text-align: right; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Qiymət</th>
+                        <th style="width: 15%; padding: 12px; text-align: right; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Cəmi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRowsHTML}
+                </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px;">
+                <div style="position: relative; width: 220px; height: 220px;">
+                    <img src="./mohur.png" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: contain; position: absolute; left: 0; bottom: 0;">
+                </div>
+                <div style="text-align: right; padding-bottom: 20px;">
+                    <span style="font-size: 16px; color: #475569; font-weight: bold;">Yekun Ödəniş:</span>
+                    <span style="font-size: 26px; font-weight: 900; color: #000000; margin-left: 10px;">${grandTotal.toFixed(2)} AZN</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 80px; font-size: 13px; color: #475569; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
+                Araz Electron bizi seçdiyiniz üçün təşəkkür edir!
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(printContainer);
+
+    const opt = {
+        margin:       0,
+        filename:     `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    try {
+        const pdfBlob = await html2pdf().set(opt).from(printContainer).output('blob');
+        printContainer.remove(); // Generasiyadan sonra elementi təmizləyirik
+
+        const fileName = `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`;
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        const shareData = {
+            files: [file],
+            title: `Qaimə - ${customerName}`,
+            text: `Araz Electron Satış Qaiməsi`
+        };
+
+        if (navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            showNotification("Brauzeriniz fayl paylaşmağı dəstəkləmir!", "error");
+        }
+    } catch (error) {
+        console.error("Paylaşma xətası:", error);
+        // İstifadəçi paylaşma pəncərəsini sadəcə bağlayıbsa xəta bildirişi çıxarmırıq
+        if (error.name !== "AbortError") {
+            showNotification("PDF paylaşıla bilmədi!", "error");
+        }
+        if (document.body.contains(printContainer)) {
+            printContainer.remove();
+        }
+    } finally {
+        btnSharePdf.disabled = false;
+        btnSharePdf.innerHTML = originalBtnText;
+    }
 }

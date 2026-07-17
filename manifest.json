@@ -13,7 +13,7 @@
       "sizes": "512x512"
     }
   ],
-  "scope": "/qaime/",
-  "start_url": "/qaime/index.html",
+  "scope": "/cosqun.qaime/",
+  "start_url": "/cosqun.qaime/index.html",
   "display": "standalone"
 }

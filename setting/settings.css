@@ -8,7 +8,7 @@ body {
 }
 
 .btn-back {
-    color: #0b0b16 !important;
+    color: #ffffff !important;
     text-decoration: none;
     font-size: 14px;
     font-weight: bold;
@@ -16,7 +16,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background-color: #a5b4fc !important;
+    background-color: hwb(230 28% 1%) !important;
     padding: 10px 20px;
     border-radius: 8px;
     margin-top: 8px;
@@ -105,7 +105,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     background-color: #5bc0be;
-    color: #0b0b16;
+    color: #ffffff;
 }
 
 /* Checkbox qutusu tənzimləmələri */
