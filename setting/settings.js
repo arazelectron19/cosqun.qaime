@@ -18,6 +18,53 @@ const baseTemplatesList = document.getElementById('base-templates-list');
 
 let allGlobalProducts = [];
 
+// DAHA OPTİMAL VƏ STANDART ÖLÇÜLÜ BİLDİRİŞ FUNKSİYASI
+function showNotification(message, type = 'success') {
+    const oldNotification = document.getElementById('custom-notification');
+    if (oldNotification) oldNotification.remove();
+
+    const notification = document.createElement('div');
+    notification.id = 'custom-notification';
+    notification.innerText = message;
+
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        padding: '12px 24px',          
+        borderRadius: '8px',
+        color: '#ffffff',
+        fontWeight: '600',             
+        fontSize: '15px',              
+        zIndex: '10000',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        transition: 'all 0.3s ease',
+        opacity: '0',
+        transform: 'translateY(-20px)'
+    });
+
+    if (type === 'success') {
+        notification.style.backgroundColor = '#10b981'; // Yaşıl
+        notification.style.borderLeft = '5px solid #059669'; 
+    } else {
+        notification.style.backgroundColor = '#ef4444'; // Qırmızı
+        notification.style.borderLeft = '5px solid #dc2626'; 
+    }
+
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 20);
+
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000); 
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadSettingsData();
 });
@@ -90,9 +137,11 @@ async function fetchBaseProducts() {
                     eSub.stopPropagation();
                     try {
                         await deleteDoc(doc(db, "base_products", prodId));
+                        showNotification("Məhsul uğurla silindi!", "success");
                         loadSettingsData();
                     } catch (err) {
                         console.error("Məhsul silinmədi:", err);
+                        showNotification("Məhsulu silmək mümkün olmadı!", "error");
                     }
                 });
 
@@ -189,9 +238,11 @@ window.cancelProductEdit = function(id, name, price) {
             eSub.stopPropagation();
             try {
                 await deleteDoc(doc(db, "base_products", id));
+                showNotification("Məhsul sistemdən silindi!", "success");
                 loadSettingsData();
             } catch (err) {
                 console.error("Məhsul silinmədi:", err);
+                showNotification("Məhsulu silmək mümkün olmadı!", "error");
             }
         });
 
@@ -211,7 +262,7 @@ window.saveProductEdit = async function(id) {
     const newPrice = parseFloat(document.getElementById(`edit-price-${id}`).value);
 
     if (!newName || isNaN(newPrice)) {
-        alert("Zəhmət olmasa ad və qiyməti düzgün daxil edin!");
+        showNotification("Zəhmət olmasa ad və qiyməti düzgün daxil edin!", "error");
         return;
     }
 
@@ -220,10 +271,11 @@ window.saveProductEdit = async function(id) {
             name: newName, 
             price: newPrice 
         });
+        showNotification("Məhsul məlumatları yeniləndi!", "success");
         await loadSettingsData();
     } catch (error) {
         console.error("Xəta baş verdi:", error);
-        alert("Məlumatı yeniləmək mümkün olmadı!");
+        showNotification("Məlumatı yeniləmək mümkün olmadı!", "error");
     }
 }
 
@@ -236,15 +288,20 @@ if (productForm) {
         const name = nameInput.value.trim();
         const price = parseFloat(priceInput.value) || 0;
 
-        if (!name) return;
+        if (!name) {
+            showNotification("Məhsul adı boş ola bilməz!", "error");
+            return;
+        }
 
         try {
             await addDoc(collection(db, "base_products"), { name, price });
+            showNotification("Yeni məhsul bazaya əlavə edildi!", "success");
             nameInput.value = '';
             priceInput.value = '';
             loadSettingsData();
         } catch(err) {
             console.error(err);
+            showNotification("Məhsul əlavə edilərkən xəta baş verdi!", "error");
         }
     });
 }
@@ -255,7 +312,10 @@ if (templateForm) {
         const templateNameInput = document.getElementById('template-name');
         const tName = templateNameInput.value.trim();
 
-        if (!tName) return;
+        if (!tName) {
+            showNotification("Şablon adı daxil edin!", "error");
+            return;
+        }
 
         const checkedBoxes = templateProductsSelector.querySelectorAll('input[type="checkbox"]:checked');
         const selectedItems = [];
@@ -269,7 +329,7 @@ if (templateForm) {
         });
 
         if (selectedItems.length === 0) {
-            alert("Şablona ən azı bir məhsul seçməlisiniz!");
+            showNotification("Şablona ən azı bir məhsul seçməlisiniz!", "error");
             return;
         }
 
@@ -278,23 +338,19 @@ if (templateForm) {
                 templateName: tName,
                 items: selectedItems
             });
+            showNotification("Yeni şablon uğurla yaradıldı!", "success");
             templateNameInput.value = '';
             loadSettingsData();
         } catch (err) {
             console.error(err);
+            showNotification("Şablon yaradıla bilmədi!", "error");
         }
     });
 }
 
-// -------------------------------------------------------------
-// ŞABLONLAR SİYAHISI VƏ YENİ MODAL (POPUP) REDAKTƏ MƏNTİQİ
-// -------------------------------------------------------------
-
-// ŞABLONLAR SİYAHISINI ÇƏKƏN FUNKSİYA (Loading Animasiyası ilə)
 async function fetchBaseTemplates() {
     if (!baseTemplatesList) return;
     
-    // Yüklənir animasiyasını daxil edirik (Dəyişən adı baseTemplatesList olaraq düzəldildi)
     baseTemplatesList.innerHTML = `
         <div class="loading-container">
             <div class="loading-spinner"></div>
@@ -356,9 +412,11 @@ async function fetchBaseTemplates() {
                     eSub.stopPropagation();
                     try {
                         await deleteDoc(doc(db, "base_templates", tId));
+                        showNotification("Şablon uğurla silindi!", "success");
                         loadSettingsData();
                     } catch (err) {
                         console.error("Şablon silinmədi:", err);
+                        showNotification("Şablon silinə bilmədi!", "error");
                     }
                 });
 
@@ -380,7 +438,6 @@ async function fetchBaseTemplates() {
     }
 }
 
-// 1. Modalı Ekranın Ortasında Açan Funksiya
 window.openTemplateModal = async function(tId, currentName) {
     const modal = document.getElementById('template-modal');
     const idInput = document.getElementById('modal-template-id');
@@ -452,7 +509,6 @@ window.openTemplateModal = async function(tId, currentName) {
     }
 }
 
-// 2. Modalı Bağlayan Funksiya
 window.closeTemplateModal = function() {
     const modal = document.getElementById('template-modal');
     if (modal) {
@@ -460,7 +516,6 @@ window.closeTemplateModal = function() {
     }
 }
 
-// 3. Modaldan Seçilən Yeni Dəyərləri Firebase-ə Saxlayan Funksiya
 window.saveTemplateModalFromModal = async function() {
     const tId = document.getElementById('modal-template-id').value;
     const nameInput = document.getElementById('modal-template-name');
@@ -470,7 +525,7 @@ window.saveTemplateModalFromModal = async function() {
 
     const newTemplateName = nameInput.value.trim();
     if (!newTemplateName) {
-        alert("Şablon adı boş ola bilməz!");
+        showNotification("Şablon adı boş ola bilməz!", "error");
         return;
     }
 
@@ -486,7 +541,7 @@ window.saveTemplateModalFromModal = async function() {
     });
 
     if (updatedItems.length === 0) {
-        alert("Şablonda ən azı bir məhsul saxlamalısınız!");
+        showNotification("Şablonda ən azı bir məhsul saxlamalısınız!", "error");
         return;
     }
 
@@ -496,17 +551,14 @@ window.saveTemplateModalFromModal = async function() {
             items: updatedItems
         });
         
+        showNotification("Şablon uğurla yeniləndi!", "success");
         closeTemplateModal();
         loadSettingsData();
     } catch (error) {
         console.error("Şablon yenilənmədi:", error);
-        alert("Yadda saxlamaq mümkün olmadı!");
+        showNotification("Yadda saxlamaq mümkün olmadı!", "error");
     }
 }
-
-// -------------------------------------------------------------
-// SƏHİFƏ DAXİLİ PANELLƏRİN AÇILIB-BAĞLANMASI (AKKORDİON)
-// -------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
     const toggleHeader = document.getElementById('toggle-products-header');
