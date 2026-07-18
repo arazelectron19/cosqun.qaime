@@ -20,6 +20,7 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.error("SW qeydiyyat xətası:", err));
 }
 
+// BÖYÜDÜLMÜŞ VƏ OPTİMAL ÖLÇÜLÜ BİLDİRİŞ FUNKSİYASI
 function showNotification(message, type = 'success') {
     const oldNotification = document.getElementById('custom-notification');
     if (oldNotification) oldNotification.remove();
@@ -32,11 +33,11 @@ function showNotification(message, type = 'success') {
         position: 'fixed',
         top: '20px',
         right: '20px',
-        padding: '12px 24px',
-        borderRadius: '6px',
+        padding: '14px 28px',          
+        borderRadius: '8px',
         color: '#ffffff',
-        fontWeight: 'bold',
-        fontSize: '14px',
+        fontWeight: '600',             
+        fontSize: '15px',              
         zIndex: '10000',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         transition: 'all 0.3s ease',
@@ -46,10 +47,10 @@ function showNotification(message, type = 'success') {
 
     if (type === 'success') {
         notification.style.backgroundColor = '#10b981';
-        notification.style.borderLeft = '5px solid #047857';
+        notification.style.borderLeft = '6px solid #047857';
     } else {
         notification.style.backgroundColor = '#ef4444';
-        notification.style.borderLeft = '5px solid #b91c1c';
+        notification.style.borderLeft = '6px solid #b91c1c';
     }
 
     document.body.appendChild(notification);
