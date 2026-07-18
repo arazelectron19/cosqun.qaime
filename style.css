@@ -620,3 +620,22 @@ body {
 #btn-share-pdf {
     min-width: 100px;
 }
+
+/* Dropdown-un yerləşdiyi konteyner (əgər varsa) */
+.input-container { 
+    position: relative; /* Bu vacibdir ki, dropdown bunun daxilində tam düzgün yerləşsin */
+}
+
+/* Dropdown-un özü */
+.custom-dropdown {
+    position: absolute;
+    top: 100%; /* İnputun tam altında başlayır */
+    left: 0;
+    width: 100%;
+    z-index: 9999; /* Digər bütün elementlərin üzərinə çıxarır */
+    background: #0b132b;
+    border: 1px solid #5bc0be;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}

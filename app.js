@@ -180,35 +180,54 @@ function renderItems() {
         const btnDeleteRow = tr.querySelector('.btn-delete-row');
 
         // CUSTOM DROPDOWN GÖSTƏRMƏ MƏNTİQİ
-        nameInput.addEventListener('focus', () => {
-            const dropdown = document.getElementById('custom-dropdown');
-            if (!dropdown) return;
+        // nameInput-un 'focus' hadisəsində bu hissəni dəyişin:
+nameInput.addEventListener('focus', () => {
+    const dropdown = document.getElementById('custom-dropdown');
+    if (!dropdown) return;
 
-            // Əgər bazada heç bir məhsul yoxdursa dropdown açılmasın
-            if (dbProductsList.length === 0) return;
+    // DROPDOWN-U BODY-Ə KÖÇÜRÜN (Bu, onu cədvəlin 'overflow' məhdudiyyətindən çıxaracaq)
+    if (dropdown.parentNode !== document.body) {
+        document.body.appendChild(dropdown);
+    }
 
-            // Mövqeni hesablayırıq
-            const wrapper = document.querySelector('.invoice-table-wrapper');
-            const rect = nameInput.getBoundingClientRect();
-            const wrapperRect = wrapper.getBoundingClientRect();
+    const rect = nameInput.getBoundingClientRect();
 
-            dropdown.style.left = `${rect.left - wrapperRect.left + wrapper.scrollLeft}px`;
-            dropdown.style.top = `${rect.bottom - wrapperRect.top + wrapper.scrollTop}px`;
-            dropdown.style.width = `${rect.width}px`;
-            dropdown.setAttribute('data-target-index', index);
-            
-            // Dropdown elementlərini süzgəcdən keçirib doldururuq
-            filterDropdownItems(nameInput.value, dropdown);
-        });
+    // İndi pozisiyanı fixed edirik ki, cədvəlin içində deyil, ekranda olsun
+    dropdown.style.position = 'fixed'; 
+    dropdown.style.left = `${rect.left}px`;
+    dropdown.style.top = `${rect.bottom}px`;
+    dropdown.style.width = `${rect.width}px`;
+    dropdown.style.zIndex = '99999';
+    
+    filterDropdownItems(nameInput.value, dropdown);
+});
 
-        nameInput.addEventListener('input', (e) => { 
-            item.name = e.target.value; 
-            const dropdown = document.getElementById('custom-dropdown');
-            if (dropdown && dropdown.style.display === 'block') {
-                filterDropdownItems(e.target.value, dropdown);
-            }
-        });
+// renderItems içindəki nameInput hissəsini bununla əvəz edin:
+nameInput.addEventListener('input', (e) => { 
+    item.name = e.target.value; 
+    const dropdown = document.getElementById('custom-dropdown');
+    
+    // Yalnız 1-dən çox simvol yazılanda aç
+    if (e.target.value.length >= 1) {
+        if (dropdown.parentNode !== document.body) document.body.appendChild(dropdown);
+        
+        const rect = nameInput.getBoundingClientRect();
+        dropdown.style.position = 'fixed';
+        dropdown.style.left = `${rect.left}px`;
+        dropdown.style.top = `${rect.bottom}px`;
+        dropdown.style.width = `${rect.width}px`;
+        dropdown.style.zIndex = '99999';
+        
+        // VACİB: Hər dəfə yazanda həmin sətrin indeksini dropdown-a ötürürük
+        dropdown.setAttribute('data-target-index', index);
+        
+        filterDropdownItems(e.target.value, dropdown);
+    } else {
+        dropdown.style.display = 'none';
+    }
+});
 
+// 'focus' hadisəsini sadəcə silin və ya boş saxlayın ki, klikləyəndə avtomatik açılmasın.
         qtyInput.addEventListener('input', (e) => {
             item.qty = parseInt(e.target.value) || 0;
             rowTotalDisplay.textContent = (item.qty * item.price).toFixed(2) + " AZN";
@@ -239,11 +258,10 @@ function renderItems() {
     if (totalPriceView) totalPriceView.textContent = grandTotal.toFixed(2);
 }
 
-// Dropdown içində axtarış və render funksiyası
+// filterDropdownItems funksiyasını belə yoxlayın:
 function filterDropdownItems(filterText, dropdown) {
     dropdown.innerHTML = '';
     const queryStr = filterText.toLowerCase().trim();
-    
     const filtered = dbProductsList.filter(p => p.name.toLowerCase().includes(queryStr));
     
     if (filtered.length === 0) {
@@ -254,12 +272,21 @@ function filterDropdownItems(filterText, dropdown) {
     filtered.forEach(prod => {
         const dItem = document.createElement('div');
         dItem.className = 'dropdown-item';
-        dItem.textContent = prod.name;
-        // Klik hadisəsi zamanı qiyməti də inputa oturtmaq üçün məlumat saxlayırıq
-        dItem.dataset.price = prod.price; 
+        dItem.innerHTML = `<span>${prod.name}</span> <span style="float:right; opacity:0.6;">${prod.price} AZN</span>`;
+        
+        dItem.addEventListener('click', () => {
+            // İndeksi buradan oxuyuruq
+            const targetIndex = parseInt(dropdown.getAttribute('data-target-index'));
+            
+            invoiceItems[targetIndex].name = prod.name;
+            invoiceItems[targetIndex].price = parseFloat(prod.price) || 0;
+            
+            renderItems(); // Siyahını yeniləyir
+            dropdown.style.display = 'none';
+        });
+        
         dropdown.appendChild(dItem);
     });
-
     dropdown.style.display = 'block';
 }
 
