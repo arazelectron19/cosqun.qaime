@@ -178,6 +178,7 @@ body {
     border: 1px solid #3a506b; 
 }
 
+/* style.css faylındakı mövcud hissəni bununla dəyişdirin */
 .invoice-table-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -185,6 +186,8 @@ body {
     border: 1px solid #3a506b;
     border-radius: 6px;
     background: #0b132b;
+    margin-left: 0 !important; /* Cədvəli tam sola yapışdırır */
+    padding-left: 0 !important;
 }
 
 .invoice-table { width: 100%; border-collapse: collapse; }
@@ -437,19 +440,6 @@ body {
     border-color: #5bc0be !important;
 }
 
-/* Sürətli Seçim Dropdown Paneli - Lap Böyük */
-.custom-dropdown {
-    position: absolute;
-    background-color: #0b132b;
-    border: 3px solid #5bc0be; /* Sərhədi daha da qalınlaşdırdıq */
-    border-radius: 12px; 
-    max-height: 320px; /* Siyahı hündürlüyünü bir az da artırdıq */
-    overflow-y: auto;
-    z-index: 9999;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-    box-sizing: border-box;
-}
-
 /* Siyahıdakı hər bir sətir - Maksimum Ölçü */
 .dropdown-item {
     padding: 20px 24px; /* Klikləmə sahəsini (hündürlüyünü) xeyli artırdıq */
@@ -625,17 +615,29 @@ body {
 .input-container { 
     position: relative; /* Bu vacibdir ki, dropdown bunun daxilində tam düzgün yerləşsin */
 }
-
-/* Dropdown-un özü */
-.custom-dropdown {
-    position: absolute;
-    top: 100%; /* İnputun tam altında başlayır */
-    left: 0;
-    width: 100%;
-    z-index: 9999; /* Digər bütün elementlərin üzərinə çıxarır */
-    background: #0b132b;
+/* style.css faylında */
+#custom-dropdown {
+    position: fixed !important;
+    z-index: 999999 !important; /* Ən üst qat[cite: 4] */
+    background-color: #0b132b;
     border: 1px solid #5bc0be;
+    border-radius: 8px;
     max-height: 200px;
     overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    display: none; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    /* Genişliyi JS-də dinamik təyin edirik */
+}
+
+/* Sətrin kliklənmə sahəsini böyüdürük */
+.dropdown-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    color: #ffffff;
+    border-bottom: 1px solid #3a506b;
+}
+
+.dropdown-item:hover {
+    background-color: #5bc0be;
+    color: #0b132b;
 }

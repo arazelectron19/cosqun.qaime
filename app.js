@@ -1,4 +1,4 @@
-// 1. Bütün lazım olan Firestore metodlarını və db-ni təhlükəsiz şəkildə yalnız bir yerdən import edirik
+ // 1. Bütün lazım olan Firestore metodlarını və db-ni təhlükəsiz şəkildə yalnız bir yerdən import edirik
 import { 
     db, 
     collection, 
@@ -155,7 +155,6 @@ if (btnNewInvoice) {
 }
 
 function renderItems() {
-    if (!itemsBody) return;
     itemsBody.innerHTML = '';
     let grandTotal = 0;
 
@@ -164,13 +163,14 @@ function renderItems() {
         grandTotal += rowTotal;
 
         const tr = document.createElement('tr');
+        // Sütunlar sola (left) hizalandı
         tr.innerHTML = `
-            <td style="text-align: center; font-weight: bold; color: #a5b4fc; padding-top:14px;">${index + 1}</td>
-            <td><input type="text" class="item-name" value="${item.name || ''}" placeholder="Məhsulun adı" autocomplete="off"></td>
-            <td><input type="number" class="item-qty text-center" value="${item.qty}"></td>
-            <td><input type="number" class="item-price text-right" value="${item.price || ''}" step="0.01" placeholder="0.00"></td>
-            <td style="text-align: right; font-weight: 600; padding-top:14px; min-width:80px;" class="row-total-display">${rowTotal.toFixed(2)} AZN</td>
-            <td><button class="btn-delete-row">×</button></td>
+            <td style="text-align: left; padding: 10px 5px;">${index + 1}</td>
+            <td style="text-align: left; padding: 10px 5px;"><input type="text" class="item-name" value="${item.name || ''}" placeholder="Məhsulun adı"></td>
+            <td style="text-align: left; padding: 10px 5px;"><input type="number" class="item-qty" value="${item.qty}" style="width: 60px;"></td>
+            <td style="text-align: left; padding: 10px 5px;"><input type="number" class="item-price" value="${item.price || ''}" step="0.01" placeholder="0.00" style="width: 80px;"></td>
+            <td style="text-align: left; padding: 10px 5px; font-weight: 600;" class="row-total-display">${rowTotal.toFixed(2)} AZN</td>
+            <td style="text-align: left; padding: 10px 5px;"><button class="btn-delete-row">×</button></td>
         `;
 
         const nameInput = tr.querySelector('.item-name');
@@ -181,49 +181,48 @@ function renderItems() {
 
         // CUSTOM DROPDOWN GÖSTƏRMƏ MƏNTİQİ
         // nameInput-un 'focus' hadisəsində bu hissəni dəyişin:
-nameInput.addEventListener('focus', () => {
-    const dropdown = document.getElementById('custom-dropdown');
-    if (!dropdown) return;
-
-    // DROPDOWN-U BODY-Ə KÖÇÜRÜN (Bu, onu cədvəlin 'overflow' məhdudiyyətindən çıxaracaq)
-    if (dropdown.parentNode !== document.body) {
-        document.body.appendChild(dropdown);
-    }
-
-    const rect = nameInput.getBoundingClientRect();
-
-    // İndi pozisiyanı fixed edirik ki, cədvəlin içində deyil, ekranda olsun
-    dropdown.style.position = 'fixed'; 
-    dropdown.style.left = `${rect.left}px`;
-    dropdown.style.top = `${rect.bottom}px`;
-    dropdown.style.width = `${rect.width}px`;
-    dropdown.style.zIndex = '99999';
-    
-    filterDropdownItems(nameInput.value, dropdown);
-});
-
-// renderItems içindəki nameInput hissəsini bununla əvəz edin:
-nameInput.addEventListener('input', (e) => { 
-    item.name = e.target.value; 
+// app.js faylında nameInput-un 'input' hadisəsini bu şəkildə dəyişin:
+nameInput.addEventListener('input', (e) => {
+    item.name = e.target.value;
     const dropdown = document.getElementById('custom-dropdown');
     
-    // Yalnız 1-dən çox simvol yazılanda aç
-    if (e.target.value.length >= 1) {
+    if (e.target.value.length >= 0) { // 0 yazırıq ki, focus olanda da açılsın
+        // Dropdown-u mütləq body-yə əlavə edirik
         if (dropdown.parentNode !== document.body) document.body.appendChild(dropdown);
         
         const rect = nameInput.getBoundingClientRect();
+        
+        // Kilitlənməni təmin edən hissə: 
+        // position: fixed istifadə etdiyimiz üçün scrollY əlavə etmirik
         dropdown.style.position = 'fixed';
         dropdown.style.left = `${rect.left}px`;
         dropdown.style.top = `${rect.bottom}px`;
         dropdown.style.width = `${rect.width}px`;
-        dropdown.style.zIndex = '99999';
+        dropdown.style.display = 'block';
         
-        // VACİB: Hər dəfə yazanda həmin sətrin indeksini dropdown-a ötürürük
         dropdown.setAttribute('data-target-index', index);
-        
         filterDropdownItems(e.target.value, dropdown);
-    } else {
-        dropdown.style.display = 'none';
+    }
+});
+
+nameInput.addEventListener('input', (e) => {
+    item.name = e.target.value;
+    const dropdown = document.getElementById('custom-dropdown');
+    
+    if (e.target.value.length >= 0) {
+        if (dropdown.parentNode !== document.body) document.body.appendChild(dropdown);
+        
+        const rect = nameInput.getBoundingClientRect();
+        
+        // Səhifənin scroll-undan asılı olmayaraq, birbaşa ekran koordinatlarını tətbiq edirik
+        dropdown.style.position = 'fixed'; 
+        dropdown.style.left = `${rect.left}px`;
+        dropdown.style.top = `${rect.bottom}px`;
+        dropdown.style.width = `${rect.width}px`;
+        dropdown.style.display = 'block';
+        
+        dropdown.setAttribute('data-target-index', index);
+        filterDropdownItems(e.target.value, dropdown);
     }
 });
 
@@ -258,7 +257,6 @@ nameInput.addEventListener('input', (e) => {
     if (totalPriceView) totalPriceView.textContent = grandTotal.toFixed(2);
 }
 
-// filterDropdownItems funksiyasını belə yoxlayın:
 function filterDropdownItems(filterText, dropdown) {
     dropdown.innerHTML = '';
     const queryStr = filterText.toLowerCase().trim();
@@ -274,14 +272,13 @@ function filterDropdownItems(filterText, dropdown) {
         dItem.className = 'dropdown-item';
         dItem.innerHTML = `<span>${prod.name}</span> <span style="float:right; opacity:0.6;">${prod.price} AZN</span>`;
         
-        dItem.addEventListener('click', () => {
-            // İndeksi buradan oxuyuruq
+        // Məhsul seçimi üçün mousedown hadisəsi
+        dItem.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // Inputun focus-unu itirməsinin qarşısını alır
             const targetIndex = parseInt(dropdown.getAttribute('data-target-index'));
-            
             invoiceItems[targetIndex].name = prod.name;
             invoiceItems[targetIndex].price = parseFloat(prod.price) || 0;
-            
-            renderItems(); // Siyahını yeniləyir
+            renderItems();
             dropdown.style.display = 'none';
         });
         
@@ -532,13 +529,10 @@ async function generateAndSharePDF() {
     const customerName = customerInput.value.trim() || "Müştəri";
     const selectedDate = dateInput ? dateInput.value : "";
     
-    // Tarixi Gün.Ay.İl formatına salırıq
     let formattedDate = "";
     if (selectedDate) {
         const parts = selectedDate.split("-");
-        if (parts.length === 3) {
-            formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
-        }
+        formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
     } else {
         const now = new Date();
         formattedDate = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
@@ -548,17 +542,15 @@ async function generateAndSharePDF() {
         return showNotification("Boş qaimə paylaşıla bilməz!", "error");
     }
 
-    // Mobil cihazın bu funksiyanı dəstəklədiyini ilk öncə yoxlayırıq
-    if (!navigator.canShare) {
-        return showNotification("Cihazınız birbaşa PDF paylaşmağı dəstəkləmir!", "error");
-    }
-
     const originalBtnText = btnSharePdf.innerHTML;
     btnSharePdf.disabled = true;
     btnSharePdf.innerHTML = "⌛ Hazırlanır...";
 
-    // PDF üçün çap şablonunu gizli konteynerdə yaradırıq
     const printContainer = document.createElement('div');
+    // Gizlətmək üçün display:none əvəzinə ekrandan kənara atırıq (render üçün daha yaxşıdır)
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '-9999px';
+    printContainer.style.top = '0';
     printContainer.className = 'pdf-render-hidden';
 
     let tableRowsHTML = "";
@@ -570,106 +562,72 @@ async function generateAndSharePDF() {
         tableRowsHTML += `
             <tr style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${index + 1}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #000000;">${item.name || ''}</td>
-                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; color: #000000;">${item.qty}</td>
-                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; color: #000000;">${item.price.toFixed(2)}</td>
-                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #000000;">${rowTotal.toFixed(2)}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">${item.name || ''}</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${item.qty}</td>
+                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0;">${item.price.toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: bold;">${rowTotal.toFixed(2)}</td>
             </tr>
         `;
     });
 
     printContainer.innerHTML = `
         <div style="padding: 40px; background-color: #ffffff; font-family: Arial, sans-serif;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
                 <div>
-                    <h1 style="font-size: 28px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">SATIŞ QAİMƏSİ</h1>
-                    <p style="margin: 15px 0 5px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 0.5px;">KİMƏ (MÜŞTƏRİ):</p>
-                    <div style="font-size: 18px; font-weight: bold; color: #000000; border-bottom: 2px solid #000000; padding-bottom: 4px; display: inline-block; min-width: 220px;">
-                        ${customerName}
-                    </div>
-                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #475569;">📅 <strong>Tarix:</strong> ${formattedDate}</p>
+                    <h1 style="font-size: 28px; font-weight: 800;">SATIŞ QAİMƏSİ</h1>
+                    <p><strong>Müştəri:</strong> ${customerName}</p>
+                    <p><strong>Tarix:</strong> ${formattedDate}</p>
                 </div>
-                <div style="text-align: right; font-family: sans-serif;">
-                    <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: #000000;">ARAZ ELECTRON</h2>
-                    <p style="font-size: 12px; color: #475569; margin: 4px 0 12px 0;">Elektronika və Texniki Dəstək Xidmətləri</p>
-                    <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
-                        <p style="margin: 2px 0;">📍 Beyləqan r. Magistral yol</p>
-                        <p style="margin: 2px 0;">🌐 arazelectron.com</p>
-                        <p style="margin: 2px 0;">✉️ info@arazelectron.com</p>
-                        <p style="margin: 2px 0;">📞 +994514280906</p>
-                    </div>
+                <div style="text-align: right;">
+                    <h2>ARAZ ELECTRON</h2>
                 </div>
             </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr style="border-bottom: 3px solid #000000;">
-                        <th style="width: 8%; padding: 12px 6px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">#</th>
-                        <th style="width: 47%; padding: 12px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Məhsulun Adı</th>
-                        <th style="width: 15%; padding: 12px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Miqdar</th>
-                        <th style="width: 15%; padding: 12px; text-align: right; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Qiymət</th>
-                        <th style="width: 15%; padding: 12px; text-align: right; font-weight: 800; text-transform: uppercase; font-size: 12px; color: #000000;">Cəmi</th>
+                    <tr style="border-bottom: 3px solid #000;">
+                        <th>#</th><th>Məhsul</th><th>Miqdar</th><th>Qiymət</th><th>Cəmi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    ${tableRowsHTML}
-                </tbody>
+                <tbody>${tableRowsHTML}</tbody>
             </table>
-
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px;">
-                <div style="position: relative; width: 220px; height: 220px;">
-                    <img src="./mohur.png" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: contain; position: absolute; left: 0; bottom: 0;">
-                </div>
-                <div style="text-align: right; padding-bottom: 20px;">
-                    <span style="font-size: 16px; color: #475569; font-weight: bold;">Yekun Ödəniş:</span>
-                    <span style="font-size: 26px; font-weight: 900; color: #000000; margin-left: 10px;">${grandTotal.toFixed(2)} AZN</span>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 80px; font-size: 13px; color: #475569; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
-                Araz Electron bizi seçdiyiniz üçün təşəkkür edir!
+            <div style="margin-top: 50px; text-align: right;">
+                <h3>Yekun: ${grandTotal.toFixed(2)} AZN</h3>
             </div>
         </div>
     `;
 
     document.body.appendChild(printContainer);
 
+    // Render üçün gözləmə müddəti
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     const opt = {
-        margin:       0,
+        margin:       0.2,
         filename:     `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
     try {
         const pdfBlob = await html2pdf().set(opt).from(printContainer).output('blob');
-        printContainer.remove(); // Generasiyadan sonra elementi təmizləyirik
+        
+        const file = new File([pdfBlob], `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`, { type: 'application/pdf' });
 
-        const fileName = `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`;
-        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-        const shareData = {
-            files: [file],
-            title: `Qaimə - ${customerName}`,
-            text: `Araz Electron Satış Qaiməsi`
-        };
-
-        if (navigator.canShare(shareData)) {
-            await navigator.share(shareData);
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Satış Qaiməsi' });
         } else {
-            showNotification("Brauzeriniz fayl paylaşmağı dəstəkləmir!", "error");
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(pdfBlob);
+            link.download = `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`;
+            link.click();
+            showNotification("PDF yükləndi!", "success");
         }
     } catch (error) {
-        console.error("Paylaşma xətası:", error);
-        // İstifadəçi paylaşma pəncərəsini sadəcə bağlayıbsa xəta bildirişi çıxarmırıq
-        if (error.name !== "AbortError") {
-            showNotification("PDF paylaşıla bilmədi!", "error");
-        }
-        if (document.body.contains(printContainer)) {
-            printContainer.remove();
-        }
+        console.error(error);
+        showNotification("Xəta baş verdi!", "error");
     } finally {
+        printContainer.remove();
         btnSharePdf.disabled = false;
         btnSharePdf.innerHTML = originalBtnText;
     }
