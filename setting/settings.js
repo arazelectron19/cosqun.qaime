@@ -18,7 +18,7 @@ const baseTemplatesList = document.getElementById('base-templates-list');
 
 let allGlobalProducts = [];
 
-// DAHA OPTİMAL VƏ STANDART ÖLÇÜLÜ BİLDİRİŞ FUNKSİYASI
+// BU FAYL ÜÇÜN DƏ YENİ, DAHA DA BÖYÜDÜLMÜŞ BİLDİRİŞ FUNKSİYASI (22px)
 function showNotification(message, type = 'success') {
     const oldNotification = document.getElementById('custom-notification');
     if (oldNotification) oldNotification.remove();
@@ -29,40 +29,40 @@ function showNotification(message, type = 'success') {
 
     Object.assign(notification.style, {
         position: 'fixed',
-        top: '20px',
-        right: '20px',
-        padding: '12px 24px',          
-        borderRadius: '8px',
+        top: '24px',
+        right: '24px',
+        padding: '22px 40px',          // Daxili boşluq bir az da böyüdü
+        borderRadius: '12px',
         color: '#ffffff',
-        fontWeight: '600',             
-        fontSize: '15px',              
+        fontWeight: '900',             // Daha qalın yazı fontu
+        fontSize: '22px',              // Şrift ölçüsü 22px-ə qaldırıldı
         zIndex: '10000',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-        transition: 'all 0.3s ease',
+        boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         opacity: '0',
-        transform: 'translateY(-20px)'
+        transform: 'translateX(100px)'
     });
 
     if (type === 'success') {
-        notification.style.backgroundColor = '#10b981'; // Yaşıl
-        notification.style.borderLeft = '5px solid #059669'; 
+        notification.style.backgroundColor = '#10b981'; // Yaşıl fond
+        notification.style.borderLeft = '10px solid #059669'; // Sol xətt daha qalın
     } else {
-        notification.style.backgroundColor = '#ef4444'; // Qırmızı
-        notification.style.borderLeft = '5px solid #dc2626'; 
+        notification.style.backgroundColor = '#ef4444'; // Qırmızı fond
+        notification.style.borderLeft = '10px solid #dc2626'; // Sol xətt daha qalın
     }
 
     document.body.appendChild(notification);
     
     setTimeout(() => {
         notification.style.opacity = '1';
-        notification.style.transform = 'translateY(0)';
+        notification.style.transform = 'translateX(0)';
     }, 20);
 
     setTimeout(() => {
         notification.style.opacity = '0';
-        notification.style.transform = 'translateY(-20px)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000); 
+        notification.style.transform = 'translateX(100px)';
+        setTimeout(() => notification.remove(), 400);
+    }, 3500); // Ekranda qalma müddəti 3.5 saniyəyə qaldırıldı
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -242,7 +242,7 @@ window.cancelProductEdit = function(id, name, price) {
                 loadSettingsData();
             } catch (err) {
                 console.error("Məhsul silinmədi:", err);
-                showNotification("Məhsulu silmək mümkün olmadı!", "error");
+                showNotification("Xəta: Məhsul silinə bilmədi!", "error");
             }
         });
 
@@ -288,10 +288,7 @@ if (productForm) {
         const name = nameInput.value.trim();
         const price = parseFloat(priceInput.value) || 0;
 
-        if (!name) {
-            showNotification("Məhsul adı boş ola bilməz!", "error");
-            return;
-        }
+        if (!name) return;
 
         try {
             await addDoc(collection(db, "base_products"), { name, price });
@@ -329,7 +326,7 @@ if (templateForm) {
         });
 
         if (selectedItems.length === 0) {
-            showNotification("Şablona ən azı bir məhsul seçməlisiniz!", "error");
+            showNotification("Şablona ən azı bir məhsul seçməlisiniz!", "error"); // ARTIQ BURADA QIRMIZI BİLDİRİŞ ÇIXACAQ
             return;
         }
 
