@@ -582,49 +582,14 @@ body {
     }
 }
 
-/* PDF yaradılarkən qaimə HTML-i ana səhifədən tam təcrid olunmuş bir <iframe>
-   daxilində qurulur (aşağıya bax), ona görə ana səhifənin zoom:1.75 və
-   viewport meta-teqi (width=1024, initial-scale=0.4) ilə bağlı heç bir
-   qarışıqlıq yaranmır - iframe-in öz sənədində bu tənzimləmələr mövcud deyil.
-
-   Iframe real (müsbət) mövqedə saxlanılır, üstünə isə tam örtən
-   .pdf-render-overlay elementi qoyulur ki, istifadəçiyə görünməsin. */
-.pdf-render-frame {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 950px;
-    height: 100px; /* JS tərəfindən real məzmuna görə yenilənir */
-    border: none;
+/* PDF yaradılarkən istifadəçinin görmədiyi arxa fonda yaranan gizli blok */
+.pdf-render-hidden {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 800px; /* Sabit en verilir ki, kəsilmə baş verməsin */
     background-color: #ffffff;
-    z-index: 999998;
-}
-
-/* Konteynerin üstünü tam örtərək istifadəçiyə görünməsinin qarşısını alan qat */
-.pdf-render-overlay {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #0b132b;
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pdf-render-overlay .loading-spinner {
-    width: 36px;
-    height: 36px;
-    border: 4px solid rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    border-top-color: #5bc0be;
-    animation: pdf-overlay-spin 1s linear infinite;
-}
-
-@keyframes pdf-overlay-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    color: #000000;
 }
 
 /* Düymələrin olduğu sağ tərəfdəki konteynerə verin */

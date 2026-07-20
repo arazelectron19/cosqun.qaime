@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qaime-v2';
+const CACHE_NAME = 'qaime-v1';
 const ASSETS = [
   '/cosqun.qaime/',
   '/cosqun.qaime/index.html',
@@ -6,8 +6,7 @@ const ASSETS = [
   '/cosqun.qaime/app.js',
   '/cosqun.qaime/firebase.js',
   '/cosqun.qaime/manifest.json',
-  '/cosqun.qaime/favicon_5.png', // <--- Səhv fayl adı düzəldildi
-  '/cosqun.qaime/html2pdf.bundle.min.js' // PDF kitabxanası artıq CDN-dən deyil, yerli fayldan yüklənir və keşlənir
+  '/cosqun.qaime/favicon_5.png' // <--- Səhv fayl adı düzəldildi
 ];
 
 // Quraşdırılma zamanı əsas faylları keşə yığır

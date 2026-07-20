@@ -1,4 +1,4 @@
-// 1. Bütün lazım olan Firestore metodlarını və db-ni təhlükəsiz şəkildə yalnız bir yerdən import edirik
+ // 1. Bütün lazım olan Firestore metodlarını və db-ni təhlükəsiz şəkildə yalnız bir yerdən import edirik
 import { 
     db, 
     collection, 
@@ -525,32 +525,10 @@ if (btnSharePdf) {
     });
 }
 
-// html2pdf.bundle.min.js CDN-dən yüklənir. Mobil şəbəkədə bu, kompüterə
-// nisbətən daha gec yükənə bilər - əgər istifadəçi "Paylaş" düyməsinə skript
-// tam yüklənmədən klikləsə, "html2pdf is not defined" xətası yaranır.
-// Bu funksiya kitabxananın hazır olmasını (müəyyən müddətə qədər) gözləyir.
-function waitForHtml2Pdf(timeoutMs = 10000) {
-    return new Promise((resolve, reject) => {
-        if (typeof window.html2pdf !== 'undefined') {
-            return resolve();
-        }
-        const startTime = Date.now();
-        const intervalId = setInterval(() => {
-            if (typeof window.html2pdf !== 'undefined') {
-                clearInterval(intervalId);
-                resolve();
-            } else if (Date.now() - startTime > timeoutMs) {
-                clearInterval(intervalId);
-                reject(new Error('html2pdf kitabxanası yüklənmədi (internet bağlantısını yoxlayın)'));
-            }
-        }, 150);
-    });
-}
-
 async function generateAndSharePDF() {
     const customerName = customerInput.value.trim() || "Müştəri";
     const selectedDate = dateInput ? dateInput.value : "";
-
+    
     let formattedDate = "";
     if (selectedDate) {
         const parts = selectedDate.split("-");
@@ -568,19 +546,12 @@ async function generateAndSharePDF() {
     btnSharePdf.disabled = true;
     btnSharePdf.innerHTML = "⌛ Hazırlanır...";
 
-    // PDF kitabxanasının hazır olmasını gözləyirik
-    try {
-        if (typeof window.html2pdf === 'undefined') {
-            btnSharePdf.innerHTML = "⌛ Kitabxana yüklənir...";
-        }
-        await waitForHtml2Pdf();
-    } catch (waitError) {
-        console.error(waitError);
-        showNotification("PDF kitabxanası yüklənmədi. İnterneti yoxlayıb yenidən cəhd edin.", "error");
-        btnSharePdf.disabled = false;
-        btnSharePdf.innerHTML = originalBtnText;
-        return;
-    }
+    const printContainer = document.createElement('div');
+    // Gizlətmək üçün display:none əvəzinə ekrandan kənara atırıq (render üçün daha yaxşıdır)
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '-9999px';
+    printContainer.style.top = '0';
+    printContainer.className = 'pdf-render-hidden';
 
     let tableRowsHTML = "";
     let grandTotal = 0;
@@ -590,148 +561,57 @@ async function generateAndSharePDF() {
         grandTotal += rowTotal;
         tableRowsHTML += `
             <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; color:#000; font-size: 12px;">${index + 1}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #000000; font-size: 12px;">${item.name || ''}</td>
-                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; color: #000000; font-size: 12px;">${item.qty}</td>
-                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #e2e8f0; color: #000000; font-size: 12px;">${item.price.toFixed(2)}</td>
-                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #000000; font-size: 12px;">${rowTotal.toFixed(2)}</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${index + 1}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">${item.name || ''}</td>
+                <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${item.qty}</td>
+                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0;">${item.price.toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: bold;">${rowTotal.toFixed(2)}</td>
             </tr>
         `;
     });
 
-    const invoiceInnerHTML = `
-        <div style="width: 950px; padding: 32px; background-color: #ffffff; font-family: Arial, sans-serif; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px;">
+    printContainer.innerHTML = `
+        <div style="padding: 40px; background-color: #ffffff; font-family: Arial, sans-serif;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
                 <div>
-                    <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px;">SATIŞ QAİMƏSİ</h1>
-                    <p style="margin: 12px 0 4px 0; font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 0.5px;">KİMƏ (MÜŞTƏRİ):</p>
-                    <div style="font-size: 14px; font-weight: bold; color: #000000; border-bottom: 2px solid #000000; padding-bottom: 3px; display: inline-block; min-width: 180px;">
-                        ${customerName}
-                    </div>
-                    <p style="margin: 8px 0 0 0; font-size: 11px; color: #475569;">📅 <strong>Tarix:</strong> ${formattedDate}</p>
+                    <h1 style="font-size: 28px; font-weight: 800;">SATIŞ QAİMƏSİ</h1>
+                    <p><strong>Müştəri:</strong> ${customerName}</p>
+                    <p><strong>Tarix:</strong> ${formattedDate}</p>
                 </div>
-                <div style="text-align: right; font-family: sans-serif;">
-                    <h2 style="font-size: 17px; font-weight: 800; margin: 0; color: #000000;">ARAZ ELECTRON</h2>
-                    <p style="font-size: 10px; color: #475569; margin: 3px 0 8px 0;">Elektronika və Texniki Dəstək Xidmətləri</p>
-                    <div style="font-size: 9px; color: #64748b; line-height: 1.5;">
-                        <p style="margin: 1px 0;">📍 Beyləqan r. Magistral yol</p>
-                        <p style="margin: 1px 0;">🌐 arazelectron.com</p>
-                        <p style="margin: 1px 0;">✉️ info@arazelectron.com</p>
-                        <p style="margin: 1px 0;">📞 +994514280906</p>
-                    </div>
+                <div style="text-align: right;">
+                    <h2>ARAZ ELECTRON</h2>
                 </div>
             </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr style="border-bottom: 3px solid #000000;">
-                        <th style="width: 8%; padding: 8px 6px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 10px; color: #000000;">#</th>
-                        <th style="width: 47%; padding: 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 10px; color: #000000;">Məhsulun Adı</th>
-                        <th style="width: 15%; padding: 8px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 10px; color: #000000;">Miqdar</th>
-                        <th style="width: 15%; padding: 8px; text-align: right; font-weight: 800; text-transform: uppercase; font-size: 10px; color: #000000;">Qiymət</th>
-                        <th style="width: 15%; padding: 8px; text-align: right; font-weight: 800; text-transform: uppercase; font-size: 10px; color: #000000;">Cəmi</th>
+                    <tr style="border-bottom: 3px solid #000;">
+                        <th>#</th><th>Məhsul</th><th>Miqdar</th><th>Qiymət</th><th>Cəmi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    ${tableRowsHTML}
-                </tbody>
+                <tbody>${tableRowsHTML}</tbody>
             </table>
-
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 36px;">
-                <div style="width: 120px;">
-                    <img src="${new URL('./mohur.png', window.location.href).href}" crossorigin="anonymous" style="display: block; width: 100%; height: auto;">
-                </div>
-                <div style="text-align: right; padding-bottom: 14px;">
-                    <span style="font-size: 13px; color: #475569; font-weight: bold;">Yekun Ödəniş:</span>
-                    <span style="font-size: 20px; font-weight: 900; color: #000000; margin-left: 8px;">${grandTotal.toFixed(2)} AZN</span>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 56px; font-size: 11px; color: #475569; font-weight: bold; padding-top: 14px;">
-                Blokbitaniya və HadDiskə zəmanət verilirmir.
+            <div style="margin-top: 50px; text-align: right;">
+                <h3>Yekun: ${grandTotal.toFixed(2)} AZN</h3>
             </div>
         </div>
     `;
 
-    // ƏSAS SƏBƏB: index.html-dəki viewport meta-teqi "width=1024, initial-scale=0.4"
-    // saxlayır və .app-container-in zoom:1.75-i var. Bəzi mobil brauzerlər viewport
-    // meta-teqinin JS ilə CANLI dəyişdirilməsinə düzgün/dərhal reaksiya vermir, ona
-    // görə əvvəlki "müvəqqəti sıfırlama" üsulu bəzi telefonlarda kifayət etmirdi.
-    //
-    // Bu dəfə daha etibarlı yol: qaimə HTML-ni ana səhifədən TAM TƏCRİD OLUNMUŞ,
-    // öz sıfırdan təmiz sənədi olan bir <iframe> daxilində qururuq. İframe-in öz
-    // sənədində HEÇ bir viewport meta-teqi yoxdur, ona görə o, ana səhifənin
-    // zoom/viewport tənzimləmələrindən TAM MÜSTƏQİLDİR.
-    const pdfFrame = document.createElement('iframe');
-    pdfFrame.className = 'pdf-render-frame';
-    document.body.appendChild(pdfFrame);
+    document.body.appendChild(printContainer);
 
-    const pdfOverlay = document.createElement('div');
-    pdfOverlay.className = 'pdf-render-overlay';
-    pdfOverlay.innerHTML = `<div class="loading-spinner"></div>`;
-    document.body.appendChild(pdfOverlay);
+    // Render üçün gözləmə müddəti
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-    const cleanup = () => {
-        if (document.body.contains(pdfFrame)) pdfFrame.remove();
-        if (document.body.contains(pdfOverlay)) pdfOverlay.remove();
+    const opt = {
+        margin:       0.2,
+        filename:     `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
     try {
-        const frameDoc = pdfFrame.contentDocument;
-        frameDoc.open();
-        frameDoc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#ffffff;">${invoiceInnerHTML}</body></html>`);
-        frameDoc.close();
-
-        // Möhür şəklinin (mohur.png) tam yüklənməsini gözləyirik. Əks halda
-        // html2canvas şəkil hazır olmadan capture edə bilər.
-        const imagesInFrame = Array.from(frameDoc.querySelectorAll('img'));
-        await Promise.all(imagesInFrame.map((img) => {
-            if (img.complete) return Promise.resolve();
-            return new Promise((resolve) => {
-                img.addEventListener('load', resolve, { once: true });
-                img.addEventListener('error', resolve, { once: true });
-            });
-        }));
-
-        // Brauzerin iframe daxilində layout/paint etməsi üçün bir neçə frame gözləyirik
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        // İframe-in hündürlüyünü real məzmuna uyğunlaşdırırıq ki, heç nə kəsilməsin
-        const contentHeight = frameDoc.body.scrollHeight || 600;
-        pdfFrame.style.height = `${contentHeight}px`;
-
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-        console.log('[PDF DEBUG] iframe body rect:', frameDoc.body.getBoundingClientRect());
-        console.log('[PDF DEBUG] iframe body scrollWidth/scrollHeight:', frameDoc.body.scrollWidth, frameDoc.body.scrollHeight);
-
-        const pageWidth = frameDoc.body.scrollWidth || 800;
-        const pageHeight = frameDoc.body.scrollHeight || 600;
-
-        const opt = {
-            margin:       0,
-            filename:     `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: true },
-            jsPDF:        { unit: 'px', format: [pageWidth, pageHeight], orientation: 'portrait' }
-        };
-
-        let pdfBlob;
-        try {
-            pdfBlob = await html2pdf().set(opt).from(frameDoc.body).output('blob');
-        } catch (innerError) {
-            console.error('[PDF DEBUG] Birinci cəhd uğursuz oldu, "a4" formatı ilə yenidən sınanılır:', innerError);
-            const fallbackOpt = { ...opt, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            pdfBlob = await html2pdf().set(fallbackOpt).from(frameDoc.body).output('blob');
-        }
-
-        if (!pdfBlob || pdfBlob.size < 1000) {
-            console.warn('[PDF DEBUG] Şübhəli kiçik PDF ölçüsü:', pdfBlob ? pdfBlob.size : 'no blob');
-        }
-
-        cleanup();
-
+        const pdfBlob = await html2pdf().set(opt).from(printContainer).output('blob');
+        
         const file = new File([pdfBlob], `Qaime_${customerName.replace(/\s+/g, '_')}.pdf`, { type: 'application/pdf' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -745,9 +625,9 @@ async function generateAndSharePDF() {
         }
     } catch (error) {
         console.error(error);
-        showNotification("Xəta: " + (error && error.message ? error.message : String(error)), "error");
-        cleanup();
+        showNotification("Xəta baş verdi!", "error");
     } finally {
+        printContainer.remove();
         btnSharePdf.disabled = false;
         btnSharePdf.innerHTML = originalBtnText;
     }
